@@ -3,6 +3,8 @@ import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import SendIcon from "@material-ui/icons/Send";
 import { useEffect, useRef, useState } from "react";
 import { Avatar } from "@material-ui/core";
+import ScrollableFeed from "react-scrollable-feed";
+
 function App() {
   const focusDiv = useRef();
 
@@ -41,22 +43,24 @@ function App() {
                 <h3>Osama</h3>
               </Title>
               <Status>
-                <UserStatus>last seen Recently</UserStatus>
+                <UserStatus>last seen recently</UserStatus>
               </Status>
             </Info>
           </ChatInfo>
         </ChatInfoWrapper>
       </Header>
       <MessageContainer>
-        <MessagesLayout>
-          {messages.map((message, index) => {
-            return (
-              <MessageBody key={index}>
-                <Message floatPossistion={fetchId}>{message.message}</Message>
-              </MessageBody>
-            );
-          })}
-        </MessagesLayout>
+        <Scrollable>
+          <MessagesLayout>
+            {messages.map((message, index) => {
+              return (
+                <MessageBody key={index}>
+                  <Message floatPossistion={fetchId}>{message.message}</Message>
+                </MessageBody>
+              );
+            })}
+          </MessagesLayout>
+        </Scrollable>
       </MessageContainer>
       <Footer>
         <FooterInput
@@ -98,15 +102,24 @@ const MessageContainer = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  overflow: auto;
+  overflow: hidden;
 `;
 
 const MessagesLayout = styled.div`
+  min-height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: flex-end;
+
   overflow: auto;
   gap: 0.5rem;
-  padding: 0.5rem 1rem 0.5rem 1rem;
+`;
+
+const Scrollable = styled(ScrollableFeed)`
+  &::-webkit-scrollbar {
+    width: 0px;
+  }
+  padding: 0.5rem;
 `;
 
 const MessageBody = styled.div`
