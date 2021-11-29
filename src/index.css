@@ -24,3 +24,11 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none; /* Firefox */
 }
+
+.target + .me {
+  margin-top: 0.4rem;
+}
+
+.me + .target {
+  margin-top: 0.4rem;
+}

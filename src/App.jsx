@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import SendIcon from "@material-ui/icons/Send";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Avatar } from "@material-ui/core";
 import ScrollableFeed from "react-scrollable-feed";
 
@@ -21,7 +21,11 @@ function App() {
     }
   };
 
-  const sendMessage = () => {
+  const sendMessage = (e) => {
+    e.preventDefault();
+    if (input.trim() === "") {
+      return;
+    }
     focusDiv.current.focus();
     setMessages([...messages, { message: input, isUser: true }]);
     setInput("");
@@ -54,7 +58,7 @@ function App() {
           <MessagesLayout>
             {messages.map((message, index) => {
               return (
-                <MessageBody key={index}>
+                <MessageBody className="me" key={index}>
                   <Message floatPossistion={fetchId}>{message.message}</Message>
                 </MessageBody>
               );
@@ -62,7 +66,7 @@ function App() {
           </MessagesLayout>
         </Scrollable>
       </MessageContainer>
-      <Footer>
+      <Footer onSubmit={sendMessage}>
         <FooterInput
           dir="auto"
           ref={focusDiv}
@@ -70,7 +74,7 @@ function App() {
           value={input}
           onChange={inputChange}
         ></FooterInput>
-        <SendButton disabled={disableButton} onClick={sendMessage}>
+        <SendButton disabled={disableButton} type="submit">
           <SendIcon fontSize="medium" />
         </SendButton>
       </Footer>
@@ -97,7 +101,7 @@ const Header = styled.div`
 
 const MessageContainer = styled.div`
   background: #0f0f0f;
-  height: 100%;
+  flex: 1;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -112,14 +116,14 @@ const MessagesLayout = styled.div`
   justify-content: flex-end;
 
   overflow: auto;
-  gap: 0.5rem;
+  gap: 0.2rem;
 `;
 
 const Scrollable = styled(ScrollableFeed)`
   &::-webkit-scrollbar {
     width: 0px;
   }
-  padding: 0.5rem;
+  padding: 0.4rem;
 `;
 
 const MessageBody = styled.div`
@@ -130,18 +134,19 @@ const Message = styled.div`
   float: ${(props) => (props.floatPossistion === 1 ? "left" : "right")};
   min-width: 2rem;
   max-width: 90%;
-  background: #212121;
-  padding: 0.6rem 1rem;
+  background: #8658dd;
+  padding: 0.4rem 1rem;
   color: white;
   border-radius: 1rem;
   font-size: 0.9em;
 `;
 
-const Footer = styled.div`
+const Footer = styled.form`
   background: #212121;
   width: 100%;
   display: flex;
   align-items: center;
+
   /* padding: 0  0.5rem 0.5rem 0.5rem; */
 `;
 
@@ -151,6 +156,7 @@ const FooterInput = styled.input`
   max-height: 16rem;
   padding: 1rem;
   font-size: 1.1em;
+  text-overflow: ellipsis;
   /* border-radius: 0.8rem; */
   border: none;
   outline: none;
