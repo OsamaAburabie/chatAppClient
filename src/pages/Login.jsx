@@ -18,7 +18,7 @@ const Login = () => {
     };
 
     axios
-      .post("http://localhost:5000/api/users/login", user)
+      .post("/api/users/login", user)
       .then((res) => {
         console.log(res.data);
         if (res.data.token) {
@@ -36,7 +36,7 @@ const Login = () => {
     <Container>
       <RegisterForm onSubmit={handleSubmit}>
         <CenteringWrapper>
-          <HeadingText>Create an account</HeadingText>
+          <HeadingText>Login</HeadingText>
           {error && <ErrorText>{error}</ErrorText>}
           <InputsContainer>
             <Label>Email</Label>
@@ -53,7 +53,7 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <Button>Register</Button>
+            <Button>Login</Button>
           </InputsContainer>
         </CenteringWrapper>
       </RegisterForm>

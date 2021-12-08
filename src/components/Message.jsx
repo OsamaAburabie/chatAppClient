@@ -1,15 +1,34 @@
-import React from "react";
+import React, { useContext } from "react";
 import styled from "styled-components";
-
-const Message = ({ id, text }) => {
+import AuthContext from "../context/AuthContext";
+import DoneIcon from "@material-ui/icons/Done";
+import TimerIcon from "@material-ui/icons/Timer";
+import Moment from "react-moment";
+const Message = ({ id, text, received, date }) => {
+  const { myId } = useContext(AuthContext);
   return (
-    <MessageBody id={id} className={`${id === 1 ? "me" : "target"}`}>
-      <MessageWrapper id={id}>
+    <MessageBody
+      myId={myId}
+      id={id}
+      className={`${id === myId ? "me" : "target"}`}
+    >
+      <MessageWrapper id={id} myId={myId}>
         <MessageContent>
           <TextContent>
             {text}
             <MessageMeta>
-              <MessageTime>12:55 AM</MessageTime>
+              <MessageTime>
+                <Moment format="hh:mm A">{date}</Moment>
+                {id === myId ? (
+                  <>
+                    {(received === "true" && <RecievedMessage />) || (
+                      <WaitingMessage />
+                    )}
+                  </>
+                ) : (
+                  <></>
+                )}
+              </MessageTime>
             </MessageMeta>
           </TextContent>
         </MessageContent>
@@ -21,20 +40,21 @@ const Message = ({ id, text }) => {
 const MessageBody = styled.div`
   width: 100%;
   display: flex;
-  justify-content: ${({ id }) => (id === 1 ? "flex-end" : "flex-start")};
+  justify-content: ${({ id, myId }) =>
+    id === myId ? "flex-end" : "flex-start"};
 `;
 
 const MessageWrapper = styled.div`
   min-width: 0;
   max-width: 80%;
-  background: #8658dd;
+  background: ${({ id, myId }) => (id === myId ? "#8658dd" : "#212121")};
   color: white;
   /* border-top-left-radius: 0.65rem;
   border-bottom-left-radius: 0.65rem;
   border-top-right-radius: 0.2rem;
   border-bottom-right-radius: 0.2rem; */
-  border-radius: ${({ id }) =>
-    id === 1
+  border-radius: ${({ id, myId }) =>
+    id === myId
       ? "0.65rem 0.2rem 0.2rem 0.65rem;"
       : "0.2rem 0.65rem 0.65rem 0.2rem;"};
   padding: 0.2125rem 0.5rem 0.375rem;
@@ -62,9 +82,21 @@ const MessageMeta = styled.span`
 `;
 
 const MessageTime = styled.span`
-  margin-right: 0.45rem;
   font-size: 0.75rem;
   white-space: nowrap;
+  margin-right: 0.3rem;
+`;
+
+const RecievedMessage = styled(DoneIcon)`
+  width: 1rem !important;
+  height: 1rem !important;
+  margin-right: 0.1rem;
+`;
+const WaitingMessage = styled(TimerIcon)`
+  width: 1rem !important;
+  height: 1rem !important;
+  margin-right: 0.1rem;
+  display: none;
 `;
 
 export default Message;

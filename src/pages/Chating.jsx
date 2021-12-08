@@ -1,20 +1,28 @@
 import styled from "styled-components";
 import ArrowBackIcon from "@material-ui/icons/ArrowBack";
 import SendIcon from "@material-ui/icons/Send";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { Avatar } from "@material-ui/core";
 import ScrollableFeed from "react-scrollable-feed";
 import Message from "../components/Message";
 import io from "socket.io-client";
+import { useHistory, useParams } from "react-router";
+import AuthContext from "../context/AuthContext";
+import axios from "axios";
+import mongoose from "mongoose";
 
 function Chating() {
+  const { chatId } = useParams();
+  const history = useHistory();
   const focusDiv = useRef();
   const [disableButton, setDisableButton] = useState(true);
   const [input, setInput] = useState("");
+  const [targetUser, setTargetUser] = useState(null);
   const [messages, setMessages] = useState([]);
-
   const [socket, setSocket] = useState();
-  const ENDPOINT = "http://192.168.1.67:5000";
+  const ENDPOINT = "https://telegramclone99.herokuapp.com";
+  // const ENDPOINT = "http://192.168.1.67:5000";
+  const { myToken, myId } = useContext(AuthContext);
 
   useEffect(() => {
     if (socket == null) return;
@@ -35,8 +43,26 @@ function Chating() {
   useEffect(() => {
     if (socket == null) return;
 
-    socket.emit("get-task", "myId");
-  }, [socket]);
+    socket.emit("get-task", chatId);
+  }, [socket, chatId]);
+
+  useEffect(() => {
+    axios
+      .get(`/api/message/getAllMessages/${chatId}`, {
+        headers: {
+          "x-auth-token": myToken,
+        },
+      })
+      .then((res) => {
+        // console.log(res.data.targetUser);
+        // setMessages(res.data.messages);
+        setTargetUser(res.data.targetUser);
+        setMessages(res.data.messages);
+      })
+      .catch((err) => {
+        console.log(err.response.data);
+      });
+  }, [myToken, chatId]);
 
   const inputChange = (e) => {
     setInput(e.target.value);
@@ -53,25 +79,47 @@ function Chating() {
       return;
     }
     focusDiv.current.focus();
-    setMessages([...messages, { message: input, isUser: true }]);
+
+    const newMessage = {
+      _id: new mongoose.Types.ObjectId().toHexString(),
+      content: input,
+      chatId: chatId,
+      sender: myId,
+      date: Date.now(),
+      received: "false",
+    };
+
+    setMessages([...messages, newMessage]);
     setInput("");
     setDisableButton(true);
-    socket.emit("send-message", { message: input, isUser: true });
+
+    axios
+      .post(`/api/message`, newMessage, {
+        headers: {
+          "x-auth-token": myToken,
+        },
+      })
+      .then((res) => {
+        socket.emit("send-message", res.data);
+        setMessages([...messages, res.data]);
+      })
+      .catch((err) => {
+        console.log(err.response.data);
+      });
   };
 
-  const fetchId = 1;
   return (
     <Container>
       <Header>
-        <BackButton>
+        <BackButton onClick={() => history.goBack()}>
           <ArrowBackIcon fontSize="large" />
         </BackButton>
         <ChatInfoWrapper>
           <ChatInfo>
-            <ChatInfoAvatar src="https://i.pravatar.cc/300" />
+            <ChatInfoAvatar src={targetUser?.pic} />
             <Info>
               <Title>
-                <h3>Osama</h3>
+                <h3>{targetUser?.name}</h3>
               </Title>
               <Status>
                 <UserStatus>last seen recently</UserStatus>
@@ -85,7 +133,13 @@ function Chating() {
           <MessagesLayout>
             {messages.map((message, index) => {
               return (
-                <Message key={index} id={fetchId} text={message?.message} />
+                <Message
+                  key={message?._id}
+                  id={message?.sender}
+                  text={message?.content}
+                  received={message?.received}
+                  date={message?.date}
+                />
               );
             })}
           </MessagesLayout>

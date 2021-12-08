@@ -26,7 +26,7 @@ const Register = () => {
     };
 
     axios
-      .post("http://localhost:5000/api/users/register", user)
+      .post("/api/users/register", user)
       .then((res) => {
         console.log(res.data);
         if (res.data.token) {

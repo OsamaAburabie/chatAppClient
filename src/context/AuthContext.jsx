@@ -1,5 +1,5 @@
-import React, { createContext, useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { createContext, useEffect, useState } from "react";
+import axios from "axios";
 
 const AuthContext = createContext();
 function AuthContextProvider(props) {
@@ -13,22 +13,17 @@ function AuthContextProvider(props) {
 
   //get the tokey frrom local storage and send to the checking end point to check if its a valid token.
   const checkLoggedIn = async () => {
-    let token = localStorage.getItem('auth-token');
+    let token = localStorage.getItem("auth-token");
     if (token === null) {
-      localStorage.setItem('auth-token', '');
-      token = '';
+      localStorage.setItem("auth-token", "");
+      token = "";
     } else setMyToken(token);
 
     try {
-      const tokenRes = await axios.post(
-        'http://localhost:5000/api/users/check',
-        null,
-        {
-          headers: { 'x-auth-token': token },
-        }
-      );
+      const tokenRes = await axios.post("api/users/check", null, {
+        headers: { "x-auth-token": token },
+      });
       if (tokenRes.data.valid === true) {
-        console.log(tokenRes.data);
         setUsername(tokenRes.data.name);
         setEmail(tokenRes.data.email);
         setIsAdmin(tokenRes.data.isAdmin);
