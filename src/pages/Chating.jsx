@@ -23,6 +23,52 @@ function Chating() {
   const ENDPOINT = "https://telegramclone99.herokuapp.com";
   // const ENDPOINT = "http://192.168.1.67:5000";
   const { myToken, myId } = useContext(AuthContext);
+  const [msg_ids, setMsg_ids] = useState([]);
+
+  useEffect(() => {
+    if (!messages) return;
+    let ids = messages
+      .filter((message) => {
+        return message.sender !== myId && message.seen === "false";
+      })
+      .map((message) => {
+        return message._id;
+      });
+
+    setMsg_ids(ids);
+    //eslint-disable-next-line
+  }, [messages]);
+  useEffect(() => {
+    if (!messages) return;
+
+    if (msg_ids.length > 0) {
+      axios
+        .post(
+          `/api/message/seen`,
+          { msg_ids },
+          {
+            headers: {
+              "x-auth-token": myToken,
+            },
+          }
+        )
+        .then((res) => {
+          // console.log(res.data);
+          const oldMessages = messages;
+          oldMessages.map((message) => {
+            if (msg_ids.includes(message._id)) {
+              message.seen = "true";
+            }
+            return message;
+          });
+          setMessages(oldMessages);
+          socket.emit("seen", msg_ids);
+          setMsg_ids([]);
+        })
+        .catch((err) => {});
+    }
+    //eslint-disable-next-line
+  }, [msg_ids]);
 
   useEffect(() => {
     if (socket == null) return;
@@ -30,6 +76,26 @@ function Chating() {
       setMessages((prev) => [...prev, message]);
     });
   }, [socket]);
+
+  useEffect(() => {
+    if (socket == null) return;
+
+    socket.on("seen-messages", (messagesIds) => {
+      const selectedMsgs = messages.filter((message) =>
+        messagesIds.includes(message._id)
+      );
+      if (selectedMsgs.length > 0) {
+        setMessages((prev) =>
+          prev.map((message) => {
+            if (messagesIds.includes(message._id)) {
+              message.seen = "true";
+            }
+            return message;
+          })
+        );
+      }
+    });
+  }, [socket, messages]);
 
   useEffect(() => {
     const s = io(`${ENDPOINT}`);
@@ -87,6 +153,7 @@ function Chating() {
       sender: myId,
       date: Date.now(),
       received: "false",
+      seen: "false",
     };
 
     setMessages([...messages, newMessage]);
@@ -138,6 +205,7 @@ function Chating() {
                   id={message?.sender}
                   text={message?.content}
                   received={message?.received}
+                  seen={message?.seen}
                   date={message?.date}
                 />
               );

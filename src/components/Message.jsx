@@ -2,9 +2,10 @@ import React, { useContext } from "react";
 import styled from "styled-components";
 import AuthContext from "../context/AuthContext";
 import DoneIcon from "@material-ui/icons/Done";
+import DoneAllIcon from "@material-ui/icons/DoneAll";
 import TimerIcon from "@material-ui/icons/Timer";
 import Moment from "react-moment";
-const Message = ({ id, text, received, date }) => {
+const Message = ({ id, text, received, date, seen }) => {
   const { myId } = useContext(AuthContext);
   return (
     <MessageBody
@@ -21,9 +22,15 @@ const Message = ({ id, text, received, date }) => {
                 <Moment format="hh:mm A">{date}</Moment>
                 {id === myId ? (
                   <>
-                    {(received === "true" && <RecievedMessage />) || (
-                      <WaitingMessage />
-                    )}
+                    {(received === "true" && (
+                      <>
+                        {seen === "true" ? (
+                          <SeenMessage />
+                        ) : (
+                          <RecievedMessage />
+                        )}
+                      </>
+                    )) || <WaitingMessage />}
                   </>
                 ) : (
                   <></>
@@ -98,5 +105,9 @@ const WaitingMessage = styled(TimerIcon)`
   margin-right: 0.1rem;
   display: none;
 `;
-
+const SeenMessage = styled(DoneAllIcon)`
+  width: 1rem !important;
+  height: 1rem !important;
+  margin-right: 0.1rem;
+`;
 export default Message;
